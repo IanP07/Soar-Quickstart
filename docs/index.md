@@ -17,14 +17,14 @@ If you'd like to use an existing codebase, check out the [Soar Library Guide](Li
 !!! note
     By default, this project works under the assumption that a team is using a 3 odometry pod setup and 
     a mecanum drivetrain. While modifications can be made for teams that are using different localization options,
-    it is reccomended that you stick to the above configuration for ease of use
+    it is reccomended that you stick to the above configuration for ease of use.
 
 Simply download or clone the <a href="https://google.com" target="_blank" rel="noopener noreferrer">Quickstart</a> 
 and open it an IDE of your choice.  
 
 Alternatively, run ```git clone https://github.com/The-Founders-Academy/IntoTheDeep2025Fork``` in a terminal window. 
 
-## Mecanum Drive Constants
+## MecanumConfigs Constants
 
 
 To make sure that this codebase works with every type of robot, some information must be provided in the ```MecanumDrive``` and 
@@ -73,10 +73,63 @@ rotation speed
     not necessarily the ideal value. For our 2024-25 season robot, our m_maxRobotSpeedMps value was around 3.2, 
     however setting it to 2.5 gave our driver much more control and worked better for the game.
 
-The ```m_metersPerTick``` value can be set either empirically or through a formula. To set it through a formula,
-find your odometry pod wheel's resolution and radius in meters, then use the
+The ```m_metersPerTick``` value can be set through a formula. To set it through a formula,
+find your odometry pod wheel's resolution and radius in meters via the product page, then use the
 
  ```2pi * radius * resolution = meters per tick```
 
 formula to get your value. 
+
+Finally, ensure that all of your drive motors are following this naming convention
+in your driverstation config file:
+
+```java
+    private String m_frontLeftName = "fL";
+    private String m_frontRightName = "fR";
+    private String m_backLeftName = "bL";
+    private String m_backRightName = "bR";
+```
+
+
+## MecanumDrive Constants
+
+### Odometry Pod Configuration
+
+Next, open the ```MecanumDrive``` file, and find: 
+
+```java
+    // Mecanum Constants
+    public double deadWheelRadiusCentimeters = 2.4;
+    public double ticksPerRevolution = 2000.0;
+    
+    public double trackWidthCentimeters = 36.3;
+    double perpendicularOffsetCentimeters = 20.32;
+```
+
+Set ```deadWheelRadiusCentimeters``` and ```ticksPerRevolution``` as per the product page
+of your odometry pods that you found earlier. Make sure that your deadwheel radius is in
+centimeters. 
+
+
+Then, measure the distance betewen your parallel odometry pods to find ```trackWidthCentimeters```
+and the distance from the center point where your parallel odometry pods meet to the center
+of your perpendicular odometry pod to find ```perpendicularOffsetCentimeters```.
+All your values should be positive. 
+
+```(Put Image Here)```
+
+### Assigning Motor RPM
+
+Finally, at the top of the MecanumDrive constructor, find:
+
+```java
+     m_frontLeft = new MotorEx(hardwareMap, m_mecanumConfigs.getFrontLeftName(), Motor.GoBILDA.RPM_312);
+     m_frontRight = new MotorEx(hardwareMap, m_mecanumConfigs.getFrontRightName(), Motor.GoBILDA.RPM_312);
+     m_backLeft = new MotorEx(hardwareMap, m_mecanumConfigs.getBackLeftName(), Motor.GoBILDA.RPM_312);
+     m_backRight = new MotorEx(hardwareMap, m_mecanumConfigs.getBackRightName(), Motor.GoBILDA.RPM_312);
+```
+
+and replace ```Motor.GoBILDA.RPM_312``` with the RPM of your drive motors. 
+
+
 
