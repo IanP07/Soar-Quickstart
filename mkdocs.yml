@@ -1,0 +1,49 @@
+site_name: Welcome | Soar Docs
+theme:
+  name: material
+
+  features:
+    - navigation.tabs
+    - navigation.instant
+    - navigation.sections
+    - toc.integrate  # table of contents
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotation
+    - content.code.copy
+  language: en
+  palette:
+    - scheme: default  # Light Mode settings
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+      primary: amber
+      accent: red
+    - scheme: slate   # Dark Mode Settings
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+      primary: orange
+      accent: red
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+
+
+# Social Media Icons at the bottom
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/IanP07
+    - icon: fontawesome/brands/instagram
+      link: https://www.instagram.com/ftcteam11282/
+
+
+
+copyright: |
+  &copy; <a href="https://github.com/The-Founders-Academy" target="_blank" rel="nooopener">Screaming Eagles</a>
+
