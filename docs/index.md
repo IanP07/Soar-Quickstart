@@ -152,6 +152,9 @@ If your current position is undershooting the target position, try slightly incr
 FTCDashboard. You'll find it in the top right, under the ```BaseMecanumParams``` dropdown. Changing the value and hitting enter will
 update the value. If you are overshooting, try slightly decreasing the ```Translation P``` value. 
 
+Once you have found the ideal value, go to the ```MecanumDrive``` file again, and find the ```Translation P``` and 
+```Translation I``` values, and replace them with the values that you got from FTCDashboard. 
+
 !!! Note
     We use a ```Translation P``` value and a ```Translation I``` value. ```Translation I``` adds some extra stopping force
     to the movement. if you find it's not correcting enough as it reaches the position, try slightly increasing ```Translation I```.
@@ -162,8 +165,57 @@ update the value. If you are overshooting, try slightly decreasing the ```Transl
 Once you have a reasonably accurate translation controller, open the ```RotationControllerTest``` file, and open FTCDashboard.
 This is similar to the Translation Controller test, but hitting the ```a``` and ```b``` buttons will rotate the robot between
 0 and 180 degrees, instead of moving it. Once again, if your rotation is overshooting reduce ```Rotation P```, if it is 
-undershooting increase it. 
+undershooting increase it.
 
 Again adjust ```Rotation I``` as needed, decreasing if movements are overly jerky at the end, 
-and increasing if it doesn't have enough "kick" or power to go to exactly 180 degrees. 
+and increasing if it doesn't have enough "kick" or power to go to exactly 180 degrees. Then enter the values you end up with
+in the ```MecanumDrive``` file. 
 
+
+## Teleop Features
+
+Congratulations! Your robot should now be fully tuned. Now we can add functionality. 
+
+### CommandDrive
+To start, run the ```CommandDrive``` file on the robot, and test the Drive. 
+It should be a fully functional field relative drive. If it is, you can move on. If not, try checking the MecanumConstants 
+you inputted in the above steps, you may have missed a value or need to refine values. 
+
+### Commands
+
+Open the ```CommandDriveAndArm2025``` file. This file is similar to the ```CommandDrive``` file, but adds in commands that the
+driver and operator can press to call. 
+
+```java
+// Driver Commands
+m_driver.buttonA().whenPressed(new InstantCommand(() -> m_mecanumDrive.resetHeading()));
+
+// Operator Commands
+m_operator.buttonA().whenPressed(new ArmCommand(armSubsystem, liftSubsystem, ArmCommand.ArmPosition.ARM_COLLECT));
+m_operator.buttonB().whenPressed(new ArmCommand(armSubsystem, liftSubsystem, ArmCommand.ArmPosition.ARM_CLEAR_BARRIER));
+m_operator.buttonX().whenPressed(new ArmCommand(armSubsystem, liftSubsystem, ArmCommand.ArmPosition.ARM_SCORE_SAMPLE_IN_LOW));
+
+m_driver.leftBumper().whenPressed((new IntakeCommand(armSubsystem, IntakeCommand.IntakeSetting.INTAKE_COLLECT)));
+m_driver.rightBumper().whenPressed(new IntakeCommand(armSubsystem, IntakeCommand.IntakeSetting.INTAKE_DEPSOSIT));
+
+m_operator.dpadUp().whenPressed(new ArmCommand(armSubsystem, liftSubsystem, ArmCommand.ArmPosition.ARM_SCORE_SPECIMEN));
+m_operator.dpadDown().whenPressed(new ArmCommand(armSubsystem, liftSubsystem, ArmCommand.ArmPosition.ARM_COLLAPSED_INTO_ROBOT));
+m_operator.buttonY().whenPressed(new IntakeCommand(armSubsystem, IntakeCommand.IntakeSetting.INTAKE_OFF));
+
+m_operator.leftBumper().whenPressed(new ArmCommand(armSubsystem, liftSubsystem, ArmCommand.ArmPosition.LEFT_BUMPER_PRESSED, m_operator));
+m_operator.rightBumper().whenPressed(new ArmCommand(armSubsystem, liftSubsystem, ArmCommand.ArmPosition.RIGHT_BUMPER_PRESSED, m_operator));
+```
+
+These Commands are located in 3 files, ```ArmCommand```, ```WristCommand```, and ```IntakeCommand```.
+We have left in all the commands used in the 2024-25 season, as they may be able to be reused in future seasons, but it is 
+easy to create and use new custom commands for each season. 
+
+### Adding Custom Commands
+
+Our commands follow a:
+
+<h2>opmode -> command -> subsystem</h2>
+
+pipeline. The opmode calls a command, which then calls a function to be executed in the subsystem. We do actions in subsystems
+for better abstraction, and because the subsystems already have access to all the hardware on the robot. It reduces the amount
+of code we have to write. 
