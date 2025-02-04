@@ -1,7 +1,6 @@
 site_name: Welcome | Soar Docs
 theme:
   name: material
-
   features:
     - navigation.tabs
     - navigation.instant

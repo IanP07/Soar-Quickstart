@@ -5,10 +5,10 @@
 
 Hello and welcome to the quickstart Guide for Soar, a codebase and library designed by the 
 2025 Screaming Eagles Programming team. This quickstart, similar to roadrunner, is a full
-codebase of everything you need to get a robot or field relative drive and command based autonomous
-working as quickly as possible, using an FTCLib structure. 
+codebase consisting of every single file you need to use a robot or field relative drive and command based autonomous
+with positional commands working as quickly as possible, using an FTCLib structure. 
 
-If you'd like to use an existing codebase, check out the [Soar Library Guide](LibraryGuide.md).
+If you'd like to use an existing codebase with this project, check out the [Soar Library Guide](LibraryGuide.md).
 
 
 
@@ -42,13 +42,13 @@ At the top of the file you will see:
     private Translation2d m_backRightPositionMeters = new Translation2d(-0.178, -0.168);
 ```
 
-Replace the values above with the correct meter values in (x, y) coordinates. 
+Replace the values above with the correct meter values in (y, x) coordinates. 
 Measure out from the centerpoint of your robot to calculate, 
 ensuring your result is in meters.
 
+<img src="images/WheelMeasurementsSoar.png" style="height: 60%; width:60%;">
 
-```(Put Image Here)```
-
+```Note the flipped direction of the robot, and how it will impact the coordinates ```
 
 ### Empirical Constants
 
@@ -74,7 +74,7 @@ rotation speed
     however setting it to 2.5 gave our driver much more control and worked better for grabbing and
     scoring game pieces.
 
-The ```m_metersPerTick``` value can be set through a formula. To set it through a formula,
+The ```m_metersPerTick``` value can be easily set through a formula. To set it through a formula,
 find your odometry pod wheel's resolution and radius in meters via the product page, then use the:
 
  ```2pi * radius * resolution = meters per tick```
@@ -117,7 +117,9 @@ and the distance from the center point where your parallel odometry pods meet to
 of your perpendicular odometry pod to find ```perpendicularOffsetCentimeters```.
 All your values should be positive. 
 
-```(Put Image Here)```
+<img src="images/OdoPodMeasurementsSoar.png" style="height: 60%; width:60%;">
+
+
 
 ### Assigning Motor RPM
 
@@ -218,4 +220,111 @@ Our commands follow a:
 
 pipeline. The opmode calls a command, which then calls a function to be executed in the subsystem. We do actions in subsystems
 for better abstraction, and because the subsystems already have access to all the hardware on the robot. It reduces the amount
-of code we have to write. 
+of code we have to write.
+
+
+#### Example of full Arm Command Structure:
+
+OpMode:
+```java
+m_operator.buttonX().whenPressed(new ArmCommand(armSubsystem, liftSubsystem, ArmCommand.ArmPosition.ARM_SCORE_SAMPLE_IN_LOW));
+```
+
+This calls the command ```ArmCommand```, the second layer in the opmode -> command -> subsytem process.
+
+ArmCommand:
+```java
+case ARM_SCORE_SAMPLE_IN_LOW:
+    m_armSubsystem.setArmPosition(m_armSubsystem.getARM_SCORE_SAMPLE_IN_LOW());
+    m_armSubsystem.setWristPosition(m_armSubsystem.getWRIST_FOLDED_OUT());
+    break;
+```
+
+This is just one part of ```ArmCommand```, set by a switch statement with the case passed in above in the OpMode. This now calls
+two functions in ```m_armSubsystem```, ```setArmPosition``` and ```setWristPosition```. 
+
+ArmSubsystem functions:
+
+```java
+public void setWristPosition(double wristPosition) {
+    wrist.setPosition(wristPosition);
+}
+    
+...
+    
+public void setArmPosition(double armPosition) {
+armMotor.setTargetPosition((int) (armPosition));
+
+((DcMotorEx) armMotor).setVelocity(2100);
+armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+    }
+```
+
+!!!Note
+    These functions are the final layer in this process, and actually set the motor speeds. It's useful to seperate things in this way,
+    as it allows you to call commands in parallel, organize things better, and avoid writing redundant code. The motor objects now do not
+    have to be seperately defined within the commands, only the sbusystems, the commands simply call the subsystem functions. 
+
+
+## Autonomous Features
+
+Soar's autonomous allows you to call ```DriveToPosition``` commands. These commands will drive to a given position on a coordinate plane,
+relative to a starting position (in coordinates), that you pass into the autonomous. 
+
+Our coordinate plane is in ```cm```, with a center point (0, 0), directly in the middle.
+The width of the field is 365.76cm, meaning the radius of the field is 182.88cm. Positive rotation is 
+counterclockwise, with 0 and 360 degrees being in the direction of the Positive X arrow. 
+
+<img src="images/CoordinateDirectionsSoar.png" style="height: 60%; width:60%;">
+
+We have also made a website (which will be updated every year), showcasing the coordinate
+system which adjusts coordinates based on where you move your mouse. This can be useful
+in determining your autonomous pathing. 
+
+<a href="https://screamingeagles2025.netlify.app" target="_blank" rel="noopener noreferrer">Coordinate Website</a> 
+
+
+
+### Example Autonomous Program:
+
+Under the ```Autos``` folder in teamcode, open the ```BlueSampleAuto``` file. If you want to make your own autonomous programs,
+copy the file, and change this line:
+
+```java
+ m_mecanumDrive = new Mecanum2025(hardwareMap, mecanumConfigs, new Pose2d(76.6, 159.3, Rotation2d.fromDegrees(270)), BaseMecanumDrive.Alliance.BLUE); // y was 159.3
+```
+
+And change the `Pose2d` to the coordinates where your robot will start in the autonomous program, using the coordinate website or measuring yourself
+from ```(0, 0)```. 
+
+Then this line:
+
+```java
+        CommandScheduler.getInstance().schedule(  new BlueSampleCommandRunner(m_mecanumDrive, m_armSubsystem, m_liftSubsystem));
+```
+
+calls the command ```BlueSampleCommandRunner```. Opening this file which is in the ```Commands``` folder, we see:
+
+an ```addCommands()``` line, with many commands in it. 
+
+This is the general format of how to write an autonomous with driveToPosition commands. 
+
+```java   
+new DriveToPosition(m_mecanumDrive, new Pose2d(110, 115, Rotation2d.fromDegrees(215))).withTimeout(200),
+```
+This will drive to the coordinate 110, 115, with a rotation of 215 degrees. Notice the ```withTimeout(200)``` at the end.
+This marks when to cancel the command, in milliseconds.
+
+You can also run commands in parallel, using this syntax:
+
+```java
+new ParallelCommandGroup(
+    new ArmCommand(m_armSubsystem, ArmCommand.ArmPosition.ARM_SCORE_SAMPLE_IN_LOW).withTimeout(1500),
+    new DriveToPosition(m_mecanumDrive, new Pose2d(124, 124, Rotation2d.fromDegrees(217))).withTimeout(2700)
+),
+```
+
+This runs both the ```ArmCommand``` and ```DriveToPosition``` command, and they each end when their respective timeOut is called.
+You can use this simple structure to easily create advanced autonomous programs. It allows for easy duplication of commands, and
+is more robust than simply driving a direction for a set amount of time, as this now automatically has error control. 
