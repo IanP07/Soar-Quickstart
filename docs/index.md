@@ -328,3 +328,29 @@ new ParallelCommandGroup(
 This runs both the ```ArmCommand``` and ```DriveToPosition``` command, and they each end when their respective timeOut is called.
 You can use this simple structure to easily create advanced autonomous programs. It allows for easy duplication of commands, and
 is more robust than simply driving a direction for a set amount of time, as this now automatically has error control. 
+
+### Teleop Commands
+
+Similarly, you can add commands to your teleop program, accessable by a button press on a controller. You would simply
+call the commands in your opmode, with the following syntax:
+
+CommandDriveAndArm2025:
+
+```java
+  // Driver Commands
+  m_driver.buttonA().whenPressed(new InstantCommand(() -> m_mecanumDrive.resetHeading()));
+
+
+  // Operator Commands
+  m_operator.buttonA().whenPressed(new ArmCommand(armSubsystem, liftSubsystem, ArmCommand.ArmPosition.ARM_COLLECT));
+  m_operator.buttonB().whenPressed(new ArmCommand(armSubsystem, liftSubsystem, ArmCommand.ArmPosition.ARM_CLEAR_BARRIER));
+  m_operator.buttonX().whenPressed(new ArmCommand(armSubsystem, liftSubsystem, ArmCommand.ArmPosition.ARM_SCORE_SAMPLE_IN_LOW));
+```
+!!!Note
+    You should keep the Driver ```resetHeading()``` command, as that when pressed will reset the "forward" direction to wherever
+    the robot is looking when pressed. This ensures the robot heading won't drift over time, and makes testing easier. 
+
+## End
+
+Congratulations! You should now have a working field relative drive, Autonomous ```DriveToPosition``` commands
+through a coordinate system, and the ability to create custom commands for both autonomous and teleop. 
