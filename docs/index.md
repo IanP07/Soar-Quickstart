@@ -19,10 +19,10 @@ If you'd like to use an existing codebase with this project, check out the [Soar
     a mecanum drivetrain. While modifications can be made for teams that are using different localization options,
     it is reccomended that you stick to the above configuration for ease of use.
 
-Simply download or clone the <a href="https://google.com" target="_blank" rel="noopener noreferrer">Quickstart</a> 
+Simply download or clone the <a href="https://github.com/IanP07/Soar-Quickstart" target="_blank" rel="noopener noreferrer">Quickstart</a> 
 and open it an IDE of your choice.  
 
-Alternatively, run ```git clone https://github.com/The-Founders-Academy/IntoTheDeep2025Fork``` in a terminal window. 
+Alternatively, run ```git clone https://github.com/IanP07/Soar-Quickstart``` in a terminal window or IDE. 
 
 ## MecanumConfigs Constants
 
