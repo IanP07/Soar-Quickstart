@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.current.util.HolonomicOdometry2025;
 import org.firstinspires.ftc.teamcode.shared.util.MathUtil;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 public class MecanumDrive extends SubsystemBase {
 
@@ -65,6 +66,9 @@ public class MecanumDrive extends SubsystemBase {
 
     private Rotation2d m_referenceRotation = Rotation2d.fromDegrees(0); // Used for heading
 
+    public VoltageSensor voltageSensor;
+    public double currentVoltage;
+
 
     public MecanumDrive(HardwareMap hardwareMap, MecanumConfigs mecanumConfigs, Pose2d initialPose, Alliance alliance) {
         m_mecanumConfigs = mecanumConfigs;
@@ -81,7 +85,7 @@ public class MecanumDrive extends SubsystemBase {
         m_kinematics = new MecanumDriveKinematics(m_mecanumConfigs.getFrontLeftPosition(), m_mecanumConfigs.getFrontRightPosition(),
                 m_mecanumConfigs.getBackLeftPosition(), m_mecanumConfigs.getBackRightPosition());
 
-
+        voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
 
         m_alliance = alliance;
         m_translationYController = new PIDController(0,0,0);
@@ -176,10 +180,10 @@ public class MecanumDrive extends SubsystemBase {
 
     protected void move(ChassisSpeeds speeds) {
         MecanumDriveWheelSpeeds wheelSpeeds = m_kinematics.toWheelSpeeds(speeds);
-        m_frontLeft.setVelocity(wheelSpeeds.frontLeftMetersPerSecond / m_mecanumConfigs.getMetersPerTick());
-        m_frontRight.setVelocity(wheelSpeeds.frontRightMetersPerSecond / m_mecanumConfigs.getMetersPerTick());
-        m_backLeft.setVelocity(wheelSpeeds.rearLeftMetersPerSecond / m_mecanumConfigs.getMetersPerTick());
-        m_backRight.setVelocity(wheelSpeeds.rearRightMetersPerSecond / m_mecanumConfigs.getMetersPerTick());
+        m_frontLeft.setVelocity(  (wheelSpeeds.frontLeftMetersPerSecond / m_mecanumConfigs.getMetersPerTick())   * Math.min((10 / currentVoltage), 1));
+        m_frontRight.setVelocity( (wheelSpeeds.frontRightMetersPerSecond / m_mecanumConfigs.getMetersPerTick())  * Math.min((10 / currentVoltage), 1));
+        m_backLeft.setVelocity(   (wheelSpeeds.rearLeftMetersPerSecond / m_mecanumConfigs.getMetersPerTick())    * Math.min((10 / currentVoltage), 1));
+        m_backRight.setVelocity(  (wheelSpeeds.rearRightMetersPerSecond / m_mecanumConfigs.getMetersPerTick())   * Math.min((10 / currentVoltage), 1));
     }
 
 
@@ -295,7 +299,7 @@ public class MecanumDrive extends SubsystemBase {
         tunePIDS();
         m_odo.updatePose();
         m_robotPose = m_odo.getPose();
-
+        currentVoltage = voltageSensor.getVoltage();
     }
 
 
