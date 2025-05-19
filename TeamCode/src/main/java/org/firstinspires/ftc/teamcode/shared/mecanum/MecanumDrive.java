@@ -15,6 +15,9 @@ import com.arcrobotics.ftclib.kinematics.wpilibkinematics.MecanumDriveKinematics
 import com.arcrobotics.ftclib.kinematics.wpilibkinematics.MecanumDriveWheelSpeeds;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.current.util.HolonomicOdometry2025;
 import org.firstinspires.ftc.teamcode.shared.util.MathUtil;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -63,6 +66,7 @@ public class MecanumDrive extends SubsystemBase {
     private Pose2d m_targetPose = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
 
     private HolonomicOdometry2025 m_odo;
+    GoBildaPinpointDriver odo;
 
     private Rotation2d m_referenceRotation = Rotation2d.fromDegrees(0); // Used for heading
 
@@ -121,11 +125,23 @@ public class MecanumDrive extends SubsystemBase {
                 trackWidthCentimeters,
                 perpendicularOffsetCentimeters
         );
-
+        Pose2D GOCinitialPose = new Pose2D(
+                DistanceUnit.MM,
+                initialPose.getX(),
+                initialPose.getY(),
+                AngleUnit.DEGREES,
+                Math.toDegrees(initialPose.getHeading())
+        );
         // m_odo is tracking heading / angle offset, so set its initial rotation to 0
+
+
+        // If using PINPOINT-COMPUTER comment below line and uncomment odo lines below it.
         m_odo.updatePose(initialPose);
-
-
+//      odo = hardwareMap.get(GoBildaPinpointDriver.class, "odo");
+        odo.setOffsets(-84.0, -168.0, DistanceUnit.MM);
+        odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        odo.setPosition(GOCinitialPose);
     }
 
     public Pose2d getPose() {
@@ -191,7 +207,7 @@ public class MecanumDrive extends SubsystemBase {
     /**
      * This function is used to move during autonomous. Most of the math is done with m_translation and m_rotation controllers,
      * through which a target posed is passed in earlier in the setTargetPose function. The calculate function then determines
-     * the appropriate X, Y, and rotational velocities (forced to be in between max and negative max robot speed),
+//     * the appropriate X, Y, and rotational velocities (forced to be in between max and negative max robot speed),
      * to move to the desired target position. This corrects for any error like overshoot and undershoot.
      * When the robot is in close enough proximity to the target position, which is determined by the tolerance values in the tunePIDS() function,
      * the robot stops. the move function converts these X, Y, and rotational speeds to individual wheel speeds, and is the last piece of code required
@@ -297,7 +313,9 @@ public class MecanumDrive extends SubsystemBase {
     // Run at 50hz, independent of other move functions, to generate Pose data from odo pods. m_robotPose is used in MoveFieldRelativeDrive.
     public void periodic() {
         tunePIDS();
+        // If using PINPOINT-COMPUTER comment below line and uncomment odo.update() line below it.
         m_odo.updatePose();
+//      odo.update();
         m_robotPose = m_odo.getPose();
         currentVoltage = voltageSensor.getVoltage();
     }
