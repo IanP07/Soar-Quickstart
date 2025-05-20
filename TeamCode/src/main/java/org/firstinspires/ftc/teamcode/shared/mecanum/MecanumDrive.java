@@ -138,10 +138,10 @@ public class MecanumDrive extends SubsystemBase {
         // If using PINPOINT-COMPUTER comment below line and uncomment odo lines below it.
         m_odo.updatePose(initialPose);
 //      odo = hardwareMap.get(GoBildaPinpointDriver.class, "odo");
-        odo.setOffsets(-84.0, -168.0, DistanceUnit.MM);
-        odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
-        odo.setPosition(GOCinitialPose);
+//      odo.setOffsets(-84.0, -168.0, DistanceUnit.MM);
+//      odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+//      odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+//      odo.setPosition(GOCinitialPose);
     }
 
     public Pose2d getPose() {
